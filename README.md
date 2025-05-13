@@ -1,0 +1,2 @@
+# CTkSeparator
+CustomTkinter Separator
