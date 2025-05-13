@@ -6,4 +6,4 @@ A customizable separator for `CustomTkinter`.
 pip install CTkSeparator
 ```
 
-## Thanks!
+# Thanks!
