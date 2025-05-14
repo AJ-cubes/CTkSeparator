@@ -27,7 +27,7 @@ class CTkSeparator(ctk.CTkBaseClass):
         self._corner_radius = corner_radius
         self._orientation = orientation
         self._gap = gap
-        self._length = int((length - ((self._dashes - 1) * self._gap)) / self._dashes)
+        self._length = 0
         self._separators = []
         self._config_length = length
 
@@ -35,10 +35,7 @@ class CTkSeparator(ctk.CTkBaseClass):
                                              border_color=master.cget('fg_color'),
                                              bg_color=master.cget('fg_color'),
                                              fg_color=master.cget('fg_color'))
-        if self._orientation == "horizontal":
-            super().__init__(master=master, width=self._length, height=self._line_weight)
-        elif self._orientation == "vertical":
-            super().__init__(master=master, width=self._line_weight, height=self._length)
+        super().__init__(master=master)
 
         self._draw_dashes()
 
@@ -47,32 +44,31 @@ class CTkSeparator(ctk.CTkBaseClass):
         for separator in self._separators:
             separator.destroy()
         self._separators = []
-        if self._orientation == "horizontal":
-            for i in range(self._dashes):
-                self._separators.append(ctk.CTkProgressBar(master=self._separator_frame,
-                                                           width=self._length,
-                                                           height=self._line_weight))
-                self._separators[i].configure(fg_color=self._fg_color,
-                                              corner_radius=self._corner_radius,
-                                              progress_color=self._fg_color)
-                if i != (self._dashes - 1):
-                    self._separators[i].grid(column=i, row=0, padx=(0, self._gap), pady=0)
-                else:
-                    self._separators[i].grid(column=i, row=0, padx=0, pady=0)
-        elif self._orientation == "vertical":
-            for i in range(self._dashes):
-                self._separators.append(ctk.CTkProgressBar(master=self._separator_frame,
-                                                           height=self._length,
-                                                           width=self._line_weight))
-                self._separators[i].configure(fg_color=self._fg_color,
-                                              corner_radius=self._corner_radius,
-                                              progress_color=self._fg_color)
-                if i != (self._dashes - 1):
-                    self._separators[i].grid(column=0, row=i, padx=0, pady=(0, self._gap))
-                else:
-                    self._separators[i].grid(column=0, row=i, padx=0, pady=0)
-        else:
-            raise ValueError('Error: Make sure orientation is either horizontal or vertical')
+        if self._orientation not in ["horizontal", "vertical"]:
+            raise ValueError("Error: Orientation must be 'horizontal' or 'vertical'")
+
+        for i in range(self._dashes):
+            params = {
+                "master": self._separator_frame,
+                "fg_color": self._fg_color,
+                "corner_radius": self._corner_radius,
+                "progress_color": self._fg_color,
+            }
+
+            if self._orientation == "horizontal":
+                params.update({"width": self._length, "height": self._line_weight})
+            else:
+                params.update({"height": self._length, "width": self._line_weight})
+
+            separator = ctk.CTkProgressBar(**params)
+            self._separators.append(separator)
+
+            self._padding = (0, self._gap) if i != (self._dashes - 1) else (0, 0)
+
+            grid_args = {"column": i, "row": 0, "padx": self._padding, "pady": 0} if self._orientation == "horizontal" \
+                else {"column": 0, "row": i, "padx": 0, "pady": self._padding}
+
+            separator.grid(**grid_args)
 
     def pack(self,
              **kwargs):
