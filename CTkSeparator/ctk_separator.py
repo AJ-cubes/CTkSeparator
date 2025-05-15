@@ -151,7 +151,13 @@ class CTkSeparator(ctk.CTkBaseClass):
             raise ValueError("Gap cannot be negative")
         if "dash_length" in kwargs and kwargs["dash_length"] < 0:
             raise ValueError("Dash Length cannot be negative")
-        if "orientation" in kwargs and kwargs["orientation"] not in ["horizontal", "vertical"]:
+        if "length" in kwargs and kwargs["length"] < 0:
+            raise ValueError("Length cannot be negative")
+        if "line_weight" in kwargs and kwargs["line_weight"] < 0:
+            raise ValueError("Line Weight cannot be negative")
+        if "corner_radius" in kwargs and kwargs["corner_radius"] < 0:
+            raise ValueError("Corner Radius cannot be negative")
+        if "orientation" in kwargs and kwargs["orientation"].lower() not in ["horizontal", "vertical"]:
             raise ValueError("Orientation must be 'horizontal' or 'vertical'")
         if "gap" in kwargs and "dash_length" in kwargs:
             raise ValueError("Both Gap and Dash Length cannot be used together")
