@@ -11,7 +11,7 @@ test_separator = CTkSeparator(master=app,
                               length=500,
                               line_weight=4,
                               dashes=10,
-                              fg_color="#FFFFFF",
+                              fg_color=("#FFFFFF", "#000000", "#FFFFFF"),
                               corner_radius=10,
                               orientation='horizontal',
                               gap=5)
