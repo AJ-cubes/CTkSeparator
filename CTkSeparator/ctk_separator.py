@@ -2,6 +2,7 @@ from typing import Any, Union, Optional, Tuple
 
 import customtkinter
 import customtkinter as ctk
+from PIL import ImageColor
 
 
 class CTkSeparator(ctk.CTkBaseClass):
@@ -10,7 +11,7 @@ class CTkSeparator(ctk.CTkBaseClass):
                  length: int = 0,
                  line_weight: int = 4,
                  dashes: int = 1,
-                 fg_color: Optional[Union[str, Tuple[str, str]]] = None,
+                 fg_color: Optional[Union[str, Tuple[str, ...]]] = None,
                  corner_radius: int = 10,
                  orientation: str = "horizontal",
                  gap: float = 0.0,
@@ -22,7 +23,13 @@ class CTkSeparator(ctk.CTkBaseClass):
             raise ValueError("Gap cannot be negative")
         if dash_length < 0:
             raise ValueError("Dash Length cannot be negative")
-        if orientation not in ["horizontal", "vertical"]:
+        if length < 0:
+            raise ValueError("Length cannot be negative")
+        if line_weight < 0:
+            raise ValueError("Line Weight cannot be negative")
+        if corner_radius < 0:
+            raise ValueError("Corner Radius cannot be negative")
+        if orientation.lower() not in ["horizontal", "vertical"]:
             raise ValueError("Orientation must be 'horizontal' or 'vertical'")
         if gap != 0.0 and dash_length != 0:
             raise ValueError("Both Gap and Dash Length cannot be used together")
@@ -32,7 +39,7 @@ class CTkSeparator(ctk.CTkBaseClass):
         self._line_weight = line_weight
         self._fg_color = customtkinter.ThemeManager.theme["CTkFrame"]["fg_color"] if fg_color is None else fg_color
         self._corner_radius = corner_radius
-        self._orientation = orientation
+        self._orientation = orientation.lower()
         self._gap = gap
         self._length = 0
         self._separators = []
@@ -58,16 +65,27 @@ class CTkSeparator(ctk.CTkBaseClass):
 
     def _draw_dashes(self):
         if self._tuple:
-            self._start_rgb = tuple(int(self._fg_color[0][i:i + 2], 16) for i in (1, 3, 5))
-            self._end_rgb = tuple(int(self._fg_color[1][i:i + 2], 16) for i in (1, 3, 5))
+            def hex_to_rgb(color):
+                if not color.startswith("#"):
+                    color = ImageColor.getrgb(color)
+                else:
+                    color = tuple(int(color[y:y + 2], 16) for y in (1, 3, 5))
+                return color
+            self._colors = []
+            num_segments = len(self._fg_color) - 1
+            steps_per_segment = self._dashes // num_segments
 
-            self._colors = [
-                "#{:02X}{:02X}{:02X}".format(
-                    int(self._start_rgb[0] + (self._end_rgb[0] - self._start_rgb[0]) * (i / (self._dashes - 1))),
-                    int(self._start_rgb[1] + (self._end_rgb[1] - self._start_rgb[1]) * (i / (self._dashes - 1))),
-                    int(self._start_rgb[2] + (self._end_rgb[2] - self._start_rgb[2]) * (i / (self._dashes - 1)))
-                ) for i in range(self._dashes)
-            ]
+            for seg_index in range(num_segments):
+                start_rgb = hex_to_rgb(self._fg_color[seg_index])
+                end_rgb = hex_to_rgb(self._fg_color[seg_index + 1])
+
+                for i in range(steps_per_segment):
+                    ratio = i / (steps_per_segment - 1)
+                    interpolated_rgb = tuple(
+                        int(start_rgb[channel] + (end_rgb[channel] - start_rgb[channel]) * ratio)
+                        for channel in range(3)
+                    )
+                    self._colors.append("#{:02X}{:02X}{:02X}".format(*interpolated_rgb))
         else:
             self._colors = [self._fg_color for _ in range(self._dashes)]
 
@@ -196,7 +214,8 @@ if __name__ == '__main__':
     def test_configure():
         test_separator.configure(orientation='vertical',
                                  length=700,
-                                 dashes=70)
+                                 dashes=70,
+                                 corner_radius=0)
 
 
     app = ctk.CTk()
@@ -204,8 +223,8 @@ if __name__ == '__main__':
                                   length=1300,
                                   line_weight=4,
                                   dashes=130,
-                                  fg_color=("#00FFFF", "#0000FF"),
-                                  corner_radius=0,
+                                  fg_color=("#0000FF", "#00FFFF", "#0000FF"),
+                                  corner_radius=10,
                                   orientation='horizontal',
                                   gap=0.0)
     test_separator.grid(row=1, column=1, pady=12, padx=10)
