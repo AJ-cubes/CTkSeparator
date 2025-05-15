@@ -13,12 +13,19 @@ class CTkSeparator(ctk.CTkBaseClass):
                  fg_color: Optional[Union[str, Tuple[str, str]]] = None,
                  corner_radius: int = 10,
                  orientation: str = "horizontal",
-                 gap: float = 0.0):
+                 gap: float = 0.0,
+                 dash_length: float = 0.0):
 
         if dashes < 1:
             raise ValueError("Dashes must be at least 1")
         if gap < 0:
             raise ValueError("Gap cannot be negative")
+        if dash_length < 0:
+            raise ValueError("Dash Length cannot be negative")
+        if orientation not in ["horizontal", "vertical"]:
+            raise ValueError("Orientation must be 'horizontal' or 'vertical'")
+        if gap != 0.0 and dash_length != 0:
+            raise ValueError("Both Gap and Dash Length cannot be used together")
 
         self._dashes = dashes
         self._master = master
@@ -30,6 +37,15 @@ class CTkSeparator(ctk.CTkBaseClass):
         self._length = 0
         self._separators = []
         self._config_length = length
+        self._dash_length = dash_length
+        self._draw = True
+        self._tuple = True if isinstance(self._fg_color, tuple) else False
+        self._colors = []
+
+        if self._gap >= 0:
+            self._type = "gap"
+        elif self._dash_length > 0:
+            self._type = "dash_length"
 
         self._separator_frame = ctk.CTkFrame(master=master,
                                              border_color=master.cget('fg_color'),
@@ -37,22 +53,38 @@ class CTkSeparator(ctk.CTkBaseClass):
                                              fg_color=master.cget('fg_color'))
         super().__init__(master=master)
 
-        self._draw_dashes()
+        if self._draw:
+            self._draw_dashes()
 
     def _draw_dashes(self):
-        self._length = int((self._config_length - ((self._dashes - 1) * self._gap)) / self._dashes)
+        if self._tuple:
+            self._start_rgb = tuple(int(self._fg_color[0][i:i + 2], 16) for i in (1, 3, 5))
+            self._end_rgb = tuple(int(self._fg_color[1][i:i + 2], 16) for i in (1, 3, 5))
+
+            self._colors = [
+                "#{:02X}{:02X}{:02X}".format(
+                    int(self._start_rgb[0] + (self._end_rgb[0] - self._start_rgb[0]) * (i / (self._dashes - 1))),
+                    int(self._start_rgb[1] + (self._end_rgb[1] - self._start_rgb[1]) * (i / (self._dashes - 1))),
+                    int(self._start_rgb[2] + (self._end_rgb[2] - self._start_rgb[2]) * (i / (self._dashes - 1)))
+                ) for i in range(self._dashes)
+            ]
+        else:
+            self._colors = [self._fg_color for _ in range(self._dashes)]
+
+        self._length = int((self._config_length - ((self._dashes - 1) * self._gap)) / self._dashes) \
+            if self._type == "gap" else self._dash_length if self._type == "dash_length" else 0
+        self._gap = int((self._config_length - (self._dash_length * self._dashes)) / (self._dashes - 1)) \
+            if self._type == "dash_length" else self._gap if self._type == "gap" else 0
         for separator in self._separators:
             separator.destroy()
         self._separators = []
-        if self._orientation not in ["horizontal", "vertical"]:
-            raise ValueError("Error: Orientation must be 'horizontal' or 'vertical'")
 
-        for i in range(self._dashes):
+        for x in range(self._dashes):
             params = {
                 "master": self._separator_frame,
-                "fg_color": self._fg_color,
+                "fg_color": self._colors[x],
                 "corner_radius": self._corner_radius,
-                "progress_color": self._fg_color,
+                "progress_color": self._colors[x],
             }
 
             if self._orientation == "horizontal":
@@ -63,10 +95,10 @@ class CTkSeparator(ctk.CTkBaseClass):
             separator = ctk.CTkProgressBar(**params)
             self._separators.append(separator)
 
-            self._padding = (0, self._gap) if i != (self._dashes - 1) else (0, 0)
+            self._padding = (0, self._gap) if x != (self._dashes - 1) else (0, 0)
 
-            grid_args = {"column": i, "row": 0, "padx": self._padding, "pady": 0} if self._orientation == "horizontal" \
-                else {"column": 0, "row": i, "padx": 0, "pady": self._padding}
+            grid_args = {"column": x, "row": 0, "padx": self._padding, "pady": 0} if self._orientation == "horizontal" \
+                else {"column": 0, "row": x, "padx": 0, "pady": self._padding}
 
             separator.grid(**grid_args)
 
@@ -99,10 +131,16 @@ class CTkSeparator(ctk.CTkBaseClass):
             raise ValueError("Dashes must be at least 1")
         if "gap" in kwargs and kwargs["gap"] < 0:
             raise ValueError("Gap cannot be negative")
+        if "dash_length" in kwargs and kwargs["dash_length"] < 0:
+            raise ValueError("Dash Length cannot be negative")
+        if "orientation" in kwargs and kwargs["orientation"] not in ["horizontal", "vertical"]:
+            raise ValueError("Orientation must be 'horizontal' or 'vertical'")
+        if "gap" in kwargs and "dash_length" in kwargs:
+            raise ValueError("Both Gap and Dash Length cannot be used together")
 
         if "length" in kwargs:
             self._config_length = kwargs.pop("length")
-            self._draw_dashes()
+            self._draw = True
 
         if "line_weight" in kwargs:
             self._line_weight = kwargs.pop("line_weight")
@@ -115,12 +153,12 @@ class CTkSeparator(ctk.CTkBaseClass):
 
         if "dashes" in kwargs:
             self._dashes = kwargs.pop("dashes")
-            self._draw_dashes()
+            self._draw = True
 
         if "fg_color" in kwargs:
             self._fg_color = kwargs.pop("fg_color")
-            for separator in self._separators:
-                separator.configure(fg_color=self._fg_color, progress_color=self._fg_color)
+            self._tuple = True if isinstance(self._fg_color, tuple) else False
+            self._draw = True
 
         if "corner_radius" in kwargs:
             self._corner_radius = kwargs.pop("corner_radius")
@@ -129,37 +167,47 @@ class CTkSeparator(ctk.CTkBaseClass):
 
         if "orientation" in kwargs:
             self._orientation = kwargs.pop("orientation")
-            self._draw_dashes()
+            self._draw = True
 
         if "gap" in kwargs:
             self._gap = kwargs.pop("gap")
-            self._draw_dashes()
+            self._dash_length = 0
+            self._type = "gap"
+            self._draw = True
+
+        if "dash_length" in kwargs:
+            self._dash_length = kwargs.pop("dash_length")
+            self._gap = 0
+            self._type = "dash_length"
+            self._draw = True
 
         if len(kwargs) > 0:
             raise ValueError(
-                f"{list(kwargs.keys())} are not supported argument(s).")
+                f"{list(kwargs.keys())} are not supported argument(s)")
+
+        if self._draw:
+            self._draw_dashes()
+
+    def bind(self, sequence=None, command=None, add="+"):
+        return self._separator_frame.bind(sequence, command, add)
 
 
 if __name__ == '__main__':
     def test_configure():
-        test_separator.configure(fg_color="#0000FF",
-                                 line_weight=10,
-                                 corner_radius=1,
-                                 length=250,
-                                 dashes=5,
-                                 orientation="vertical",
-                                 gap=50)
+        test_separator.configure(orientation='vertical',
+                                 length=700,
+                                 dashes=70)
 
 
     app = ctk.CTk()
     test_separator = CTkSeparator(master=app,
-                                  length=500,
+                                  length=1300,
                                   line_weight=4,
-                                  dashes=10,
-                                  fg_color="#FFFFFF",
-                                  corner_radius=10,
+                                  dashes=130,
+                                  fg_color=("#00FFFF", "#0000FF"),
+                                  corner_radius=0,
                                   orientation='horizontal',
-                                  gap=5)
+                                  gap=0.0)
     test_separator.grid(row=1, column=1, pady=12, padx=10)
     app.after(1000, test_configure)
     app.mainloop()
