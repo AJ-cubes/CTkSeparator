@@ -86,7 +86,7 @@ class CTkSeparator(ctk.CTkBaseClass):
                     )
                     self._colors.append("#{:02X}{:02X}{:02X}".format(*interpolated_rgb))
         else:
-            self._colors = [self._fg_color for _ in range(self._dashes)]
+            self._colors = [self._fg_color] * self._dashes
 
         self._length = int((self._config_length - ((self._dashes - 1) * self._gap)) / self._dashes) \
             if self._type == "gap" else self._dash_length if self._type == "dash_length" else 0
@@ -205,8 +205,7 @@ class CTkSeparator(ctk.CTkBaseClass):
             self._draw = True
 
         if len(kwargs) > 0:
-            raise ValueError(
-                f"{list(kwargs.keys())} are not supported argument(s)")
+            raise ValueError(f"{list(kwargs.keys())} are not supported argument(s)")
 
         if self._draw:
             self._draw_dashes()
