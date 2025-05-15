@@ -1,6 +1,5 @@
 from typing import Any, Union, Optional, Tuple
 
-import customtkinter
 import customtkinter as ctk
 from PIL import ImageColor
 
@@ -37,7 +36,7 @@ class CTkSeparator(ctk.CTkBaseClass):
         self._dashes = dashes
         self._master = master
         self._line_weight = line_weight
-        self._fg_color = customtkinter.ThemeManager.theme["CTkFrame"]["fg_color"] if fg_color is None else fg_color
+        self._fg_color = ctk.ThemeManager.theme["CTkFrame"]["fg_color"] if fg_color is None else fg_color
         self._corner_radius = corner_radius
         self._orientation = orientation.lower()
         self._gap = gap
