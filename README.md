@@ -58,7 +58,6 @@ below = ctk.CTkLabel(master=app,
                      text="Below the CTkSeparator")
 below.pack(pady=12, padx=10)
 app.mainloop()
-
 ```
 
 ## License
