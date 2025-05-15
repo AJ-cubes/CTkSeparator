@@ -1,19 +1,19 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="CTkSeparator",  # Package name (must be unique on PyPI)
-    version="0.1",  # Version number (update as needed)
-    author="AJ-cubes",  # Your name or organization
+    name="CTkSeparator",
+    version="0.6",
+    author="AJ-cubes",
     description="A customizable separator widget for CustomTkinter",
-    long_description=open("README.md").read(),  # Readme as full description
-    long_description_content_type="text/markdown",  # Define Readme format
-    packages=find_packages(),  # Automatically find submodules
-    install_requires=["customtkinter"],  # Dependencies
-    license="MIT",  # License type
-    classifiers=[  # Metadata for PyPI
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
+    packages=find_packages(),
+    install_requires=["customtkinter"],
+    license="MIT",
+    classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.6",  # Minimum Python version required
+    python_requires=">=3.6"
 )
