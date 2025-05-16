@@ -36,7 +36,7 @@ class CTkSeparator(ctk.CTkBaseClass):
         self._dashes = dashes
         self._master = master
         self._line_weight = line_weight
-        self._fg_color = ctk.ThemeManager.theme["CTkFrame"]["fg_color"] if fg_color is None else fg_color
+        self._fg_color = ctk.ThemeManager.theme["CTkProgressBar"]["progress_color"] if fg_color is None else fg_color
         self._corner_radius = corner_radius
         self._orientation = orientation.lower()
         self._gap = gap
@@ -62,7 +62,7 @@ class CTkSeparator(ctk.CTkBaseClass):
         if self._draw:
             self._draw_dashes()
 
-    def _draw_dashes(self):
+    def _make_gradient(self):
         if self._tuple:
             def hex_to_rgb(color):
                 if not color.startswith("#"):
@@ -70,23 +70,31 @@ class CTkSeparator(ctk.CTkBaseClass):
                 else:
                     color = tuple(int(color[y:y + 2], 16) for y in (1, 3, 5))
                 return color
+
             self._colors = []
             num_segments = len(self._fg_color) - 1
-            steps_per_segment = self._dashes // num_segments
+            steps_per_segment = max(1, self._dashes // num_segments)
 
             for seg_index in range(num_segments):
                 start_rgb = hex_to_rgb(self._fg_color[seg_index])
                 end_rgb = hex_to_rgb(self._fg_color[seg_index + 1])
 
                 for i in range(steps_per_segment):
-                    ratio = i / (steps_per_segment - 1)
+                    ratio = i / max(1, (steps_per_segment - 1))
                     interpolated_rgb = tuple(
                         int(start_rgb[channel] + (end_rgb[channel] - start_rgb[channel]) * ratio)
                         for channel in range(3)
                     )
                     self._colors.append("#{:02X}{:02X}{:02X}".format(*interpolated_rgb))
+
+            while len(self._colors) < self._dashes:
+                self._colors.append(self._fg_color[-1])
+
         else:
             self._colors = [self._fg_color] * self._dashes
+
+    def _draw_dashes(self):
+        self._make_gradient()
 
         self._length = int((self._config_length - ((self._dashes - 1) * self._gap)) / self._dashes) \
             if self._type == "gap" else self._dash_length if self._type == "dash_length" else 0
