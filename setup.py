@@ -2,13 +2,13 @@ from setuptools import setup, find_packages
 
 setup(
     name="CTkSeparator",
-    version="1.1",
+    version="1.2",
     author="AJ-cubes",
     description="A customizable separator widget for CustomTkinter",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     packages=find_packages(),
-    install_requires=["customtkinter"],
+    install_requires=["customtkinter", "pillow"],
     license="MIT",
     classifiers=[
         "Programming Language :: Python :: 3",
