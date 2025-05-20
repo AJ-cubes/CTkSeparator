@@ -96,7 +96,7 @@ class CTkSeparator(ctk.CTkBaseClass):
     def _draw_dashes(self):
         self._make_gradient()
 
-        self._length = int((self._config_length - ((self._dashes - 1) * self._gap)) / self._dashes) \
+        self._length = max(2, int((self._config_length - ((self._dashes - 1) * self._gap)) / self._dashes)) \
             if self._type == "gap" else self._dash_length if self._type == "dash_length" else 0
         self._gap = int((self._config_length - (self._dash_length * self._dashes)) / (self._dashes - 1)) \
             if self._type == "dash_length" else self._gap if self._type == "gap" else 0
@@ -226,8 +226,7 @@ if __name__ == '__main__':
     def test_configure():
         test_separator.configure(orientation='vertical',
                                  length=700,
-                                 dashes=70,
-                                 corner_radius=0)
+                                 dashes=700)
 
 
     app = ctk.CTk()
@@ -236,9 +235,9 @@ if __name__ == '__main__':
                                   line_weight=4,
                                   dashes=130,
                                   fg_color=("#0000FF", "#00FFFF", "#0000FF"),
-                                  corner_radius=10,
+                                  corner_radius=0,
                                   orientation='horizontal',
                                   gap=0.0)
     test_separator.grid(row=1, column=1, pady=12, padx=10)
-    app.after(1000, test_configure)
+    app.after(5000, test_configure)
     app.mainloop()
