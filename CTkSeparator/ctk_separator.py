@@ -54,9 +54,9 @@ class CTkSeparator(ctk.CTkBaseClass):
             self._type = "dash_length"
 
         self._separator_frame = ctk.CTkFrame(master=master,
-                                             border_color=master.cget('fg_color'),
-                                             bg_color=master.cget('fg_color'),
-                                             fg_color=master.cget('fg_color'))
+                                             border_width=0,
+                                             fg_color="transparent",
+                                             bg_color="transparent")
         super().__init__(master=master)
 
         if self._draw:
@@ -110,6 +110,7 @@ class CTkSeparator(ctk.CTkBaseClass):
                 "fg_color": self._colors[x],
                 "corner_radius": self._corner_radius,
                 "progress_color": self._colors[x],
+                "border_width": 0,
             }
 
             if self._orientation == "horizontal":
@@ -231,13 +232,13 @@ if __name__ == '__main__':
 
     app = ctk.CTk()
     test_separator = CTkSeparator(master=app,
-                                  length=1300,
+                                  length=100,
                                   line_weight=4,
-                                  dashes=130,
+                                  dashes=10,
                                   fg_color=("#0000FF", "#00FFFF", "#0000FF"),
-                                  corner_radius=0,
+                                  corner_radius=10,
                                   orientation='horizontal',
-                                  gap=0.0)
+                                  gap=1)
     test_separator.grid(row=1, column=1, pady=12, padx=10)
     app.after(5000, test_configure)
     app.mainloop()

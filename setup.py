@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="CTkSeparator",
-    version="1.4",
+    version="1.5.1",
     author="AJ-cubes",
     author_email="ajcubes33@gmail.com",
     description="A customizable separator widget for CustomTkinter",
